@@ -28,3 +28,7 @@ resetPasswordExpireAt: Date,
 verificationToken: String,
 verificationTokenExpireAt: Date,
 },{timestamps: true});
+
+
+export const User = mongoose.model("User", userSchema);
+
