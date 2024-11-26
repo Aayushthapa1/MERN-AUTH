@@ -66,9 +66,9 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    res.send("login route");
+    res.send("login route");  
 };
 
 export const logout = async (req, res) => {
-    res.send("logout route");
+    res.send("logout roe");
 };
