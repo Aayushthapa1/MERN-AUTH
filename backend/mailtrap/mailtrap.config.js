@@ -11,4 +11,4 @@ const sender = {
   name: "Your Name"
 };
 
-export { mailtrapClient, snder };
+export { mailtrapClient, sender };
