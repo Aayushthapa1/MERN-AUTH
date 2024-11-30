@@ -2,6 +2,7 @@ import { User } from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import { sendVerificationEmail , sendWelcomeEmail } from "../mailtrap/emails.js";
+import crypto from "crypto";
 
 export const signup = async (req, res) => {
 
@@ -114,9 +115,88 @@ export const verifyEmail = async function (req, res) {
 };
 
 export const login = async (req, res) => {
-    res.send("login route");  
+   const { email, password } = req.body;
+   try {
+    const user = await User.findOne({email});
+    if(!user){
+        return res.status(400).json({
+            success: false,
+            message: "Invalid credentials",
+        });
+    }
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    if (!isPasswordValid) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid credentials",
+        });
+    }
+    generateTokenAndSetCookie(res, user._id);
+    user.lastlogin = new Date ();
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Logged in successfully",
+        user: {
+            ...user._doc,
+            password: undefined
+        }
+    });
+   }
+   catch (error) {
+    console.log("Error in login",error);
+    res.status(400).json({
+        success: false,
+        message: error.message
+    });
+
+   }
 };
 
 export const logout = async (req, res) => {
-    res.send("logout route");
+    res.clearCookie("token");
+    res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+    });
 };
+
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        // generating a ranodm token
+        const resetToken = crypto.randomBytes(20).toString("hex");
+        const resetPasswordExpireAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpireAt = resetPasswordExpireAt;
+        await user.save();
+
+
+        //send mail
+        await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+
+        res.status(200).json({
+            success: true,
+            message: "Password reset email sent successfully",
+        });
+    }
+    catch (error) {
+        console.log("Error in forgot password",error);
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+
+};
+
