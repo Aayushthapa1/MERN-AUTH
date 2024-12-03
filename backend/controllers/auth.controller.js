@@ -191,7 +191,7 @@ export const forgotPassword = async (req, res) => {
         });
     }
     catch (error) {
-        console.log("Error in forgot password",errr);
+        console.log("Error in forgot password",erorr);
         res.status(400).json({
             success: false,
             message: error.message
