@@ -187,12 +187,12 @@ export const forgotPassword = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Password reset email sent succesfully",
+            message: "Password reset email sent successfully",
         });
     }
     catch (error) {
         console.log("Error in forgot password",error);
-        res.status(400).json({
+        res.status(400).json(
             success: false,
             message: error.message
         });
